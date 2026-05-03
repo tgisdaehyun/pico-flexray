@@ -21,10 +21,16 @@ static dma_channel_config injector_to_ecu_dc;
 
 // rules now come from flexray_injector_rules.h
 
+#define INJECT_FRAME_BYTES (MAX_FRAME_PAYLOAD_BYTES + 8)
+#define INJECT_FRAME_PADDED_BYTES ((INJECT_FRAME_BYTES + 3) & ~3)
+
+_Static_assert((INJECT_FRAME_PADDED_BYTES % sizeof(uint32_t)) == 0,
+               "DMA frame storage must be padded to 32-bit words");
+
 typedef struct {
     uint8_t valid;  // 1 if data[] is valid
     uint16_t len;    // header + payload bytes + 3 CRC bytes (max 262)
-    uint8_t data[MAX_FRAME_PAYLOAD_BYTES + 8];
+    uint8_t data[INJECT_FRAME_PADDED_BYTES] __attribute__((aligned(4)));
 } frame_template_t;
 
 static frame_template_t TEMPLATES[NUM_TRIGGER_RULES];
