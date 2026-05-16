@@ -26,7 +26,7 @@ static inline uint32_t get_bits_msb(const uint32_t *buffer, int start_bit_idx, i
     }
 }
 
-static uint16_t calculate_flexray_header_crc(const uint8_t *raw_buffer)
+uint16_t __no_inline_not_in_flash_func(calculate_flexray_header_crc)(const uint8_t *raw_buffer)
 {
     uint32_t data_word = 0;
     data_word = (uint32_t)(raw_buffer[0] & 0b11111) << 16;

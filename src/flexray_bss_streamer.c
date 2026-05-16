@@ -82,9 +82,8 @@ static volatile uint16_t current_frame_id = 0;
 static volatile uint8_t current_cycle_count = 0;
 
 // Saturating counters per frame ID for FR3/FR4 source identification.
-// A frame must be seen SOURCE_CONFIRM_THRESHOLD times before it is
-// considered confirmed on that channel.  Counters are periodically
-// decremented (decay) so stale/noisy entries time out naturally.
+// A frame must pass header CRC and be seen SOURCE_CONFIRM_THRESHOLD times
+// before it is considered confirmed on that channel.
 #define SOURCE_CONFIRM_THRESHOLD 3
 #define SOURCE_COUNTER_MAX       6
 
@@ -113,12 +112,22 @@ void clear_frame_source_bitmaps(void)
     memset((void *)fr4_source_counts, 0, sizeof(fr4_source_counts));
 }
 
-void decay_frame_source_counts(void)
+static inline uint16_t header_crc_from_header(const uint8_t *header)
 {
-    for (int i = 0; i < 2048; i++) {
-        if (fr3_source_counts[i] > 0) fr3_source_counts[i]--;
-        if (fr4_source_counts[i] > 0) fr4_source_counts[i]--;
+    return (uint16_t)(((uint16_t)(header[2] & 0x01) << 10) |
+                      ((uint16_t)header[3] << 2) |
+                      ((header[4] >> 6) & 0x03));
+}
+
+static inline bool ring_header_crc_valid(const volatile uint8_t *ring_base,
+                                         uint32_t start,
+                                         uint32_t ring_mask)
+{
+    uint8_t header[5];
+    for (uint32_t i = 0; i < sizeof(header); i++) {
+        header[i] = ring_base[(start + i) & ring_mask];
     }
+    return calculate_flexray_header_crc(header) == header_crc_from_header(header);
 }
 
 void notify_queue_init(void)
@@ -241,19 +250,23 @@ void __time_critical_func(streamer_fr34_irq0_handler)(void)
 
     if (fr3_idx_now != fr3_prev_write_idx) {
         uint32_t start = fr3_prev_write_idx;
-        uint8_t h0 = fr3_ring_buffer[(start + 0) & FR3_RING_MASK];
-        uint8_t h1 = fr3_ring_buffer[(start + 1) & FR3_RING_MASK];
-        uint16_t fid = (uint16_t)(((uint16_t)(h0 & 0x07) << 8) | h1);
-        record_frame_id(fr3_source_counts, fid);
+        if (ring_header_crc_valid(fr3_ring_buffer, start, FR3_RING_MASK)) {
+            uint8_t h0 = fr3_ring_buffer[(start + 0) & FR3_RING_MASK];
+            uint8_t h1 = fr3_ring_buffer[(start + 1) & FR3_RING_MASK];
+            uint16_t fid = (uint16_t)(((uint16_t)(h0 & 0x07) << 8) | h1);
+            record_frame_id(fr3_source_counts, fid);
+        }
         fr3_prev_write_idx = fr3_idx_now;
     }
 
     if (fr4_idx_now != fr4_prev_write_idx) {
         uint32_t start = fr4_prev_write_idx;
-        uint8_t h0 = fr4_ring_buffer[(start + 0) & FR4_RING_MASK];
-        uint8_t h1 = fr4_ring_buffer[(start + 1) & FR4_RING_MASK];
-        uint16_t fid = (uint16_t)(((uint16_t)(h0 & 0x07) << 8) | h1);
-        record_frame_id(fr4_source_counts, fid);
+        if (ring_header_crc_valid(fr4_ring_buffer, start, FR4_RING_MASK)) {
+            uint8_t h0 = fr4_ring_buffer[(start + 0) & FR4_RING_MASK];
+            uint8_t h1 = fr4_ring_buffer[(start + 1) & FR4_RING_MASK];
+            uint16_t fid = (uint16_t)(((uint16_t)(h0 & 0x07) << 8) | h1);
+            record_frame_id(fr4_source_counts, fid);
+        }
         fr4_prev_write_idx = fr4_idx_now;
     }
 
