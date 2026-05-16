@@ -9,7 +9,7 @@ A Raspberry Pi Pico-based FlexRay man-in-the-middle (MITM) bridge that forwards 
 - Core features:
   - Continuous, bidirectional FlexRay frame forwarding (vehicle ↔ ECU)
   - USB interface is Panda-compatible
-  - FlexRay MITM Done
+  - Man-in-the-middle bridge mode for FlexRay capture, forwarding, and injection workflows
 
 ### Hardware connections
 1. For read-only FlexRay frame capture, connect a single transceiver to the vehicle’s bus, attach its BP/BM lines to the FlexRay lines in your vehicle.
