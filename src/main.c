@@ -17,7 +17,6 @@
 #include <unistd.h>
 #include "hardware/regs/addressmap.h"
 
-#include "replay_frame.h"
 #include "flexray_frame.h"
 #include "panda_usb.h"
 #include "flexray_bss_streamer.h"
@@ -60,7 +59,6 @@ static void print_ram_usage(void) {
 // --- Configuration ---
 
 // -- Streamer Pins --
-#define REPLAY_TX_PIN 15
 #define BGE_PIN 2
 #define STBN_PIN 3
 
@@ -90,7 +88,6 @@ extern volatile uint32_t core1_sent_frame_count;
 
 void print_pin_assignments(void)
 {
-    printf("Test Data Output Pin: %02d\n", REPLAY_TX_PIN);
     printf("BGE Pin: %02d\n", BGE_PIN);
     printf("STBN Pin: %02d\n", STBN_PIN);
     printf("FR1 Transceiver Pins: RXD=%02d, TXD=%02d, TXEN=%02d\n", RXD_FR_1_PIN, TXD_FR_1_PIN, TXEN_FR_1_PIN);
@@ -228,8 +225,6 @@ int main(void)
 
     printf("Actual system clock: %lu Hz\n", clock_get_hz(clk_sys));
     printf("\n--- FlexRay Continuous Streaming Bridge (Forwarder Mode) ---\n");
-
-    // setup_replay(pio1, REPLAY_TX_PIN);
 
     multicore_launch_core1(core1_entry);
     sleep_ms(500);
