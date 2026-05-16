@@ -5,3 +5,5 @@ unused
 .cache
 __pycache__
 *.csv
+.wrangler/
+web/index.html

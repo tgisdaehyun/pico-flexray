@@ -11,9 +11,13 @@
 #define FRAME_BUF_SIZE_BYTES 8 + MAX_FRAME_PAYLOAD_BYTES
 #define MAX_FRAME_BUF_SIZE_BYTES 264
 
-#define FROM_ECU 0
-#define FROM_VEHICLE 1
-#define FROM_UNKNOWN 0xff
+// 4-bit bitmask: each bit indicates the frame was seen on that source.
+// e.g. FR1 + FR3 = 0b1010
+#define FROM_FR1 (1u << 3)  // 0b1000
+#define FROM_FR2 (1u << 2)  // 0b0100
+#define FROM_FR3 (1u << 1)  // 0b0010
+#define FROM_FR4 (1u << 0)  // 0b0001
+#define FROM_UNKNOWN 0
 
 // FlexRay frame structure definition based on specification
 typedef struct
@@ -35,6 +39,7 @@ bool parse_frame(const uint8_t *raw_buffer, flexray_frame_t *parsed_frame);
 bool parse_frame_from_slice(const uint8_t *raw_buffer, uint16_t slice_len, uint8_t source, flexray_frame_t *parsed_frame);
 void print_frame(flexray_frame_t *frame);
 bool is_valid_frame(flexray_frame_t *frame, const uint8_t *raw_buffer);
+uint16_t calculate_flexray_header_crc(const uint8_t *raw_buffer);
 uint32_t calculate_flexray_frame_crc(const uint8_t *restrict p, const uint16_t len16);
 uint8_t calculate_autosar_e2e_crc8(const uint8_t *restrict p, const uint8_t init_value, const uint8_t len);
 

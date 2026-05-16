@@ -4,18 +4,16 @@
 <img src="./imgs/pico-flexray-bmw-g30.webp" alt="pico-flexray BMW G30 example" width="600"/>
 <img src="./imgs/openpilot-lateral-bmw-g30.webp" alt="OpenPilot BMW G30 example" width="600"/>
 
-A Raspberry Pi Pico-based FlexRay man-in-the-middle (MITM) bridge that forwards frames between ECU and vehicle transceivers, with optional test replay output and a Panda-compatible USB interface.
+A Raspberry Pi Pico-based FlexRay man-in-the-middle (MITM) bridge that forwards frames between ECU and vehicle transceivers, with a Panda-compatible USB interface.
 
 - Core features:
   - Continuous, bidirectional FlexRay frame forwarding (vehicle ↔ ECU)
-  - Optional replay/test output via a dedicated GPIO
   - USB interface is Panda-compatible
   - FlexRay MITM Done
 
 ### Hardware connections
 1. For read-only FlexRay frame capture, connect a single transceiver to the vehicle’s bus, attach its BP/BM lines to the FlexRay lines in your vehicle.
 2. To differentiate frames from the ECU and the vehicle, use a man-in-the-middle (MITM) setup: split the original FlexRay cable and connect each half to its own transceiver with separate BP/BM pairs—one transceiver for the ECU side, one for the vehicle side.
-3. To perform a test, connect the REPLAY_TX pin to either RXD_FROM_ECU or RXD_FROM_VEHICLE. This will allow you to observe frames in Cabana.
 
 Refer to your board’s pinout for physical pad/header locations. Signals below use Pico GPIO numbers as configured in `src/main.c`.
 
@@ -23,13 +21,21 @@ Refer to your board’s pinout for physical pad/header locations. Signals below 
 |---:|---|---|---|---|
 | 2 | `BGE` | Output | Both | BGE to FlexRay transceivers (set High to enable)
 | 3 | `STBN` | Output | Both | STBN to transceivers (set High to exit standby)
-| 4 | `TXD_TO_ECU` | Output | ECU | TXD to ECU-side transceiver
-| 5 | `TXEN_TO_ECU` | Output | ECU | TX_EN for ECU-side transceiver
-| 6 | `RXD_FROM_ECU` | Input | ECU | RXD from ECU-side transceiver
-| 28 | `TXD_TO_VEHICLE` | Output | Vehicle | TXD to vehicle-side transceiver
-| 27 | `TXEN_TO_VEHICLE` | Output | Vehicle | TX_EN for vehicle-side transceiver
-| 26 | `RXD_FROM_VEHICLE` | Input | Vehicle | RXD from vehicle-side transceiver
-| 15 | `REPLAY_TX` | Output | Test | PIO replay/test sample FlexRay frame output
+| 28 | `TXD_FR_1` | Output | FR1 | TXD to FR1 transceiver
+| 27 | `TXEN_FR_1` | Output | FR1 | TX_EN for FR1 transceiver
+| 26 | `RXD_FR_1` | Input | FR1 | RXD from FR1 transceiver
+| 4 | `TXD_FR_2` | Output | FR2 | TXD to FR2 transceiver
+| 5 | `TXEN_FR_2` | Output | FR2 | TX_EN for FR2 transceiver
+| 6 | `RXD_FR_2` | Input | FR2 | RXD from FR2 transceiver
+| 10 | `TXD_FR_3` | Output | FR3 | TXD to FR3 transceiver
+| 9 | `TXEN_FR_3` | Output | FR3 | TX_EN for FR3 transceiver
+| 8 | `RXD_FR_3` | Input | FR3 | RXD from FR3 transceiver
+| 16 | `TXD_FR_4` | Output | FR4 | TXD to FR4 transceiver
+| 22 | `TXEN_FR_4` | Output | FR4 | TX_EN for FR4 transceiver
+| 21 | `RXD_FR_4` | Input | FR4 | RXD from FR4 transceiver
+| 17 | `RELAY_FR_1_2` | Output | FR1/FR2 | Relay control for the FR1/FR2 pair
+| 18 | `RELAY_FR_3_4` | Output | FR3/FR4 | Relay control for the FR3/FR4 pair
+| 20 | `LED` | Output | Status | On-board/app status LED
 | 7 | `ISR` | Output | Measurement | Use a logic analyzer to measure the frame preparation time consumption.
 
 ![Wiring diagram](imgs/wiring.png)
@@ -114,7 +120,3 @@ To visualize FlexRay data using Cabana:
    ./tools/cabana/cabana
    ```
 
-5. Testing:
-   If you want to develop without transceivers and are using only a single Pico board,
-   connect REPLAY_TX to RXD_FROM_ECU or RXD_FROM_VEHICLE with a jumper wire.
-   You will then see frames in Cabana.
