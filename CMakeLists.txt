@@ -55,7 +55,6 @@ pico_set_program_version(pico_flexray "0.1")
 # Generate PIO header
 pico_generate_pio_header(pico_flexray 
     ${CMAKE_CURRENT_LIST_DIR}/src/flexray_bss_streamer.pio
-    ${CMAKE_CURRENT_LIST_DIR}/src/flexray_replay_q8_frame.pio
     ${CMAKE_CURRENT_LIST_DIR}/src/flexray_forwarder_with_injector.pio
     )
 

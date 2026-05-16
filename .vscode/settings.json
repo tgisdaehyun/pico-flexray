@@ -39,7 +39,6 @@
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "cortex-debug.variableUseNaturalFormat": false,
     "files.associations": {
-        "flexray_replay_q8_frame.pio.h": "c",
         "irq.h": "c",
         "replay_frame.h": "c",
         "flexray_frame.h": "c",
